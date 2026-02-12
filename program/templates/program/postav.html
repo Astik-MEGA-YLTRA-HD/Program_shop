@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Управление магазином и заказами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+
+        form input[type=text],
+        select {
+            width: 250px;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        button,
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Поставщики</h1>
+    </header>
+
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+
+    <!-- Основное содержимое страницы -->
+    <section id="orders">
+
+        <h2>Список поставщиков</h2>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Поставщик</th>
+                <th>Сумма</th>
+                <th>Последняя операция</th>
+            </tr>
+            {% for i in data %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ i.postav }}</td>
+                <td style="color:{% if i.total_cen > 0 %} red {% elif i.total_cen < 0 %} green {% endif %};" >{{ i.total_cen }}</td>
+                <td>{{ i.date }}</td>
+                <td style="display: flex; align-items: center; gap: 5px;">
+                    <a type="submit" href="/glavn/editor/postav/{{i.id}}/" class="btn">✎</a>          
+                    <a href="">|</a>
+                    <a href="/glavn/postav_prod/{{ i.id }}/" class="btn">🔍</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+</body>
+
+</html>

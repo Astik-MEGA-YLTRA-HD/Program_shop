@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Контакты</title>
+    <style>
+        /* Стили оставлены такими же */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+
+        form input[type=text],
+        select {
+            width: 250px;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        button,
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .toggle-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .toggle-header {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-body {
+            display: none; /* Изначально скроем тело секции */
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Контакты</h1>
+    </header>
+
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+
+    <!-- Основное содержимое страницы -->
+    <section id="contacts">
+        <h2>Контактная информация</h2>
+        <div class="toggle-section">
+            <div class="toggle-header" onclick="toggleSection(this)">Добавить</div>
+            <div class="toggle-body" style="display:none;"> <!-- Скрываем изначально -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label for="contact_type">Тип контакта:</label>
+                    <select name="contact_type" id="contact_type" class="form-select">
+                        <option value="supplier">Поставщик</option>
+                        <option value="customer">Клиент</option>
+                    </select><br>
+
+                    <label for="name">ФИО или Название организации:</label>
+                    <input type="text" name="name" id="name" class="form-control" required /><br>
+
+                    <label for="phone">Телефон:</label>
+                    <input type="tel" name="phone" id="phone" class="form-control" required /><br>
+
+                    <label for="address">Адрес:</label>
+                    <input type="text" name="address" id="address" class="form-control" required /><br>
+
+                    <button type="submit" class="btn btn-primary">Добавить контакт</button>
+                </form>
+            </div>
+        </div>
+
+        <h3>Список контактов:</h3>
+
+        <div style="margin-bottom: 20px;">
+            <br>
+            <select name="order_type" onchange="window.location.href=this.value">
+                <option value="/glavn/contacts/">Поставщики</option>
+                <option value="/glavn/client_contacts/" selected>Клиенты</option>
+            </select>
+            <br>
+        </div>
+
+        <table>
+            <tr>
+                <th>#</th>
+                <th>ФИО/Организация</th>
+                <th>Телефон</th>
+                <th>Адрес</th>
+            </tr>
+            {% for contact in contacts %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ contact.name }}</td>
+                <td>{{ contact.phone }}</td>
+                <td>{{ contact.address }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <script>
+            function toggleSection(element) {
+                const parentDiv = element.parentElement;
+                const contentDiv = parentDiv.querySelector('.toggle-body');
+                contentDiv.style.display = contentDiv.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+    </section>
+    <br>
+    <br>
+    <br>
+    <br>
+</body>
+
+</html>

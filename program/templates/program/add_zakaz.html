@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание заказов</title>
+    <style>
+        .toggle-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .toggle-header {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-body {
+            display: none; /* Изначально скроем тело секции */
+            padding: 10px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+        
+        nav a:hover {
+            background-color: #555;
+        }
+        
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+        
+        form input[type=text], select {
+            width: 100%;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even){background-color: #f2f2f2;}
+    </style>
+</head>
+<body>
+    
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Магазин и заказы</h1>
+    </header>
+    
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Основное содержимое страницы -->
+    <section id="orders">
+        <h2>Создание заказов</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Поля вне таблицы -->
+                
+                <label for="fio">ФИО Клиента:</label>
+                <input type="text" name="fio" placeholder="ФИО Клиента" list="browsers" required />
+                <datalist id="browsers">
+                    {% for i in data1 %}
+                        <option>{{ i.name }}</option>
+                    {% endfor %}
+                </datalist>
+                
+                <label for="months">Срок рассрочки (месяцы):</label>
+                <input type="text" name="m_count" placeholder="Количество месяцев" required /><br>
+                
+                <label for="payment_date">Дата оплаты:</label>
+                <input type="date" name="opl_date" value="{{ today|date:'Y-m-d' }}" required /><br>
+                
+                <label for="payment_date">Взнос:</label>
+                <input type="number" name="vznos" placeholder="Взнос в руб." required /><br>
+            </div>
+            
+            <!-- Таблица для добавления нескольких позиций -->
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Название продукта.</th>
+                        <th>Стоимость.</th>
+                        <th>Количество шт.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="orderRow">
+                        <td>
+                            <input type="text" name="product[]" placeholder="Название продукта" list="product" required />
+                            <datalist id="product">
+                                {% for i in data2 %}
+                                    <option>{{ i.product }}</option>
+                                {% endfor %}
+                            </datalist>
+                        </td>
+                        <td><input type="number" name="cen[]" placeholder="Цена в руб." required /></td>
+                        <td><input type="number" min="1" name="count[]" placeholder="Кол-во шт." required /></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Кнопка для добавления новых строк -->
+            <button type="button" onclick="addOrderRow()">+ Добавить позицию</button>
+            <button type="submit">Создать заказы</button>
+        </form>
+
+        <script>
+            // Установка текущей даты
+            const dateInputs = document.querySelectorAll('input[name^="opl_date"]');
+            const today = new Date().toISOString().split('T')[0]; // Формат yyyy-mm-dd
+            dateInputs.forEach(input => input.value = today);
+
+            // Функция для добавления новой строки в таблицу заказов
+            function addOrderRow() {
+                var table = document.getElementById("ordersTable");
+                var rowCount = table.rows.length;
+                var newRow = table.insertRow(rowCount);
+                
+                // Создание ячеек для каждого поля
+                var cell1 = newRow.insertCell(0);
+                var cell2 = newRow.insertCell(1); // Название продукта
+                var cell3 = newRow.insertCell(2); // Количество шт.
+                
+                // Наполнение ячеек соответствующими полями ввода
+                cell1.innerHTML = '<input type="text" name="product[]" placeholder="Название продукта" list=product required>';
+                cell2.innerHTML = '<input type="number" name="cen[]" placeholder="Ценав в руб." required>';
+                cell3.innerHTML = '<input type="number" min="1" name="count[]" placeholder="Кол-во шт." required>';
+            }
+
+            function toggleSection(header) {
+                const body = header.nextElementSibling; // находим соседний элемент (.toggle-body)
+                body.style.display = body.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+    </section>
+    
+</body>
+</html>

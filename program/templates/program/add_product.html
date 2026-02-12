@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление магазином и заказами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+        
+        nav a:hover {
+            background-color: #555;
+        }
+        
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+        
+        form input[type=text], select {
+            width: 100%;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even){background-color: #f2f2f2;}
+    </style>
+</head>
+<body>
+    
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Склад</h1>
+    </header>
+    
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Основное содержимое страницы -->
+    <section id="orders">
+        <h2>Добавление продукции</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Поле выбора поставщика -->
+            <label for="postav">Поставщик:</label>
+            <input type="text" name="postav" placeholder="Поставщик" list="browsers" required><br>
+            <datalist id="browsers">
+                    {% for i in postv %}
+                        <option>{{ i.name }}</option>
+                    {% endfor %}
+                </datalist>
+
+            <label for="postav">Дата прихода:</label>
+            <input type="date" name="prih_date" id="date"><br>
+        
+            <!-- Таблица для добавления нескольких продуктов -->
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th>Название продукта</th>
+                        <th>Приходная цена</th>
+                        <th>Количество шт.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="productRow">
+                        <td><input type="text" name="product[]" placeholder="Название" list="product" required></td>
+                            <datalist id="product">
+                                {% for i in prod %}
+                                    <option>{{ i.product }}</option>
+                                {% endfor %}
+                            </datalist>
+                        <td><input type="text" name="prih_cen[]" placeholder="Цена руб." required></td>
+                        <td><input type="text" name="count[]" placeholder="Шт." required></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Кнопка для добавления новых строк -->
+            <button type="button" onclick="addProductRow()">+ Добавить строку</button>
+            <button type="submit">Добавить товары</button>
+        </form>
+
+        <script>
+            const dateInput = document.getElementById('date');
+
+                // Устанавливаем текущую дату в формате ISO (yyyy-mm-dd)
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+
+
+            function addProductRow() {
+                var table = document.getElementById("productsTable");
+                var rowCount = table.rows.length;
+                var newRow = table.insertRow(rowCount);
+                
+                // Создаем ячейки для каждого столбца
+                var cell1 = newRow.insertCell(0); // Название продукта
+                var cell2 = newRow.insertCell(1); // Приходная цена
+                var cell3 = newRow.insertCell(2); // Количество шт.
+                var cell4 = newRow.insertCell(3); // Дата прихода
+                
+                // Заполняем каждую ячейку соответствующим input полем
+                cell1.innerHTML = '<input type="text" name="product[]" placeholder="Название" list="product" required>';
+                cell2.innerHTML = '<input type="text" name="prih_cen[]" placeholder="Цена руб." required>';
+                cell3.innerHTML = '<input type="text" name="count[]" placeholder="Шт." required>';
+            }
+        </script>
+    </section>
+    
+</body>
+</html>

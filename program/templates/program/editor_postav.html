@@ -1,0 +1,120 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    {% for i in data %}
+        <title>Редактирование заказа №{{ i.id }}</title>
+    {% endfor %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+        
+        nav a:hover {
+            background-color: #555;
+        }
+        
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+        
+        form input[type=text], select {
+            width: 100%;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even){
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Шапка сайта -->
+    <header>
+        {% for i in data %}
+        <h1>Редактирование заказа №{{ i.id }}</h1>
+        {% endfor %}
+    </header>
+    
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Основное содержимое страницы -->
+    <section id="order-edit">
+        <form method="post">
+            {% csrf_token %}
+            <label for="client_fio">ФИО клиента: {{ data1.postav }}</label><br><br>
+            <label for="client_fio">Общая сумма (оставшаяся): {{ data1.total_cen }}</label><br><br>
+
+            <label for="opl_date">Дата привоза товара:</label>
+            <input type="date" name="opl_date" value="{{ opl_date }}"><br><br>
+
+            <button type="submit">Сохранить изменения</button>
+        </form>
+    </section>
+    
+</body>
+</html>

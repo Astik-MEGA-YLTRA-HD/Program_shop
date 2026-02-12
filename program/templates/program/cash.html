@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Оборот кассы</title>
+    <style>
+        /* Повторение стилей заголовков и навигации */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-evenly;
+            background-color: #444;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 1em;
+            transition: all .3s ease-in-out;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        section {
+            max-width: 80%;
+            margin: auto;
+            padding-top: 20px;
+        }
+
+        form input[type=text],
+        select {
+            width: 250px;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        button,
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .toggle-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .toggle-header {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-body {
+            display: none; /* Изначально скроем тело секции */
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Оборот кассы</h1>
+    </header>
+
+    <!-- Навигационное меню -->
+    <nav>
+        <ul>
+            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
+            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
+            <li><a href="/glavn/postav/">Поставщики</a></li>
+            <li><a href="/glavn/product/">Склад</a></li>
+            <li><a href="/glavn/prod/">Продажи</a></li>
+            <li><a href="/glavn/cash/">Касса</a></li>
+            <li><a href="/glavn/contacts/">Контакты</a></li>
+        </ul>
+    </nav>
+
+    <!-- Основное содержимое страницы -->
+    <section id="cash">
+        <h3>Регистрация новой операции:</h3>
+        <div class="toggle-section">
+            <div class="toggle-header" onclick="toggleSection(this)">Добавить</div>
+            <div class="toggle-body" style="display:none;">
+                <form method="post">
+                    {% csrf_token %}
+                    <label for="amount">Сумма:</label>
+                    <input type="number" name="amount" placeholder="Введите сумму" required /><br/>
+
+                    <label for="movement_type">Тип операции:</label>
+                    <select name="movement_type" required>
+                        <option value="INCOME">Приход</option>
+                        <option value="OUTGO">Расход</option>
+                    </select><br/>
+
+                    <label for="reason">Описание:</label>
+                    <textarea name="reason" rows="3" cols="40" placeholder="Краткое описание операции" required></textarea><br/>
+
+                    <label for="source">Источник/Назначение:</label>
+                    <input type="text" name="source" placeholder="Клиент, поставщик или назначение расхода" /><br/>
+                    <label for="source">Дата:</label>
+                    <input type="date" name="date" value="{{today}}"/><br/>
+
+                    <button type="submit">Зарегистрировать операцию</button>
+                </form>
+            </div>
+        </div>
+
+        <h2>Баланс кассы: {{ balance }} рублей</h2>
+        <h3>История операций:</h3>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Сумма</th>
+                <th>Тип операции</th>
+                <th>Описание</th>
+                <th>Источник/назначение</th>
+                <th>Дата</th>
+            </tr>
+            {% for movement in movements %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="color:{% if movement.get_movement_type_display == 'Приход' %} green {% else %} red {% endif %};">
+                    {{ movement.amount }}</td>
+                <td style="color:{% if movement.get_movement_type_display == 'Приход' %} green {% else %} red {% endif %};">
+                    {{ movement.get_movement_type_display }}
+                </td>
+                <td>{{ movement.reason }}</td>
+                <td>{{ movement.source }}</td>
+                <td>{{ movement.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <script>
+            // Установка текущей даты
+            const dateInputs = document.querySelectorAll('input[name^="date"]');
+            const today = new Date().toISOString().split('T')[0]; // Формат yyyy-mm-dd
+            dateInputs.forEach(input => input.value = today);
+
+            function toggleSection(header) {
+                const body = header.nextElementSibling; // находим соседний элемент (.toggle-body)
+                body.style.display = body.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+    </section>
+</body>
+
+</html>
