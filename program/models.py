@@ -27,7 +27,6 @@ class Postav(models.Model):
     postav = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100)
     total_cen = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField()
 
 class PostavCashMovement(models.Model):
     TYPE_CHOICES = (

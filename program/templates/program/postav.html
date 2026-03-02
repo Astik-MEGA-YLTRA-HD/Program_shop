@@ -1,135 +1,181 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Управление магазином и заказами</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<title>CRM — Поставщики</title>
+<style>
+:root {
+    --bg-main: #e5e7eb;
+    --bg-sidebar: #d1d5db;
+    --bg-card: #ffffff;
+    --accent: #4f46e5;
+    --accent-light: #6366f1;
+    --text-main: #1f2937;
+    --text-muted: #4b5563;
+    --danger: #ef4444;
+    --success: #22c55e;
+}
 
-        header {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1em 0;
-        }
+/* Reset */
+* { margin:0; padding:0; box-sizing:border-box; }
 
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            justify-content: space-evenly;
-            background-color: #444;
-        }
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+}
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 1em;
-            transition: all .3s ease-in-out;
-        }
+/* Sidebar */
+.sidebar {
+    width: 200px;
+    background: var(--bg-sidebar);
+    padding: 40px 18px;
+    position: fixed;
+    height: 100%;
+    border-right: 1px solid rgba(0,0,0,0.08);
+}
 
-        nav a:hover {
-            background-color: #555;
-        }
+.sidebar h2 {
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+}
 
-        section {
-            max-width: 80%;
-            margin: auto;
-            padding-top: 20px;
-        }
+.sidebar ul { list-style:none; }
+.sidebar li { margin-bottom: 14px; }
 
-        form input[type=text],
-        select {
-            width: 250px;
-            height: 40px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            padding-left: 10px;
-        }
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    transition: 0.25s ease;
+}
 
-        button,
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+.sidebar a:hover { color: var(--text-main); background: rgba(99,102,241,0.1); }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+.sidebar svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    stroke: var(--accent-light);
+    transition: 0.25s ease;
+}
 
-        th,
-        td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+.sidebar a:hover svg { stroke: var(--accent); }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-    </style>
+/* Main content */
+.main {
+    margin-left: 200px;
+    width: 100%;
+    padding: 50px 70px;
+}
+
+/* Heading */
+.main h2 {
+    margin-bottom: 25px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Table */
+.table-wrapper {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    overflow-x: auto;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    padding-bottom: 15px;
+}
+
+td {
+    padding: 14px 0;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 14px;
+}
+
+tr:hover { background: rgba(99,102,241,0.05); }
+
+/* Actions */
+.table-actions a {
+    font-size: 14px;
+    color: var(--accent);
+    text-decoration: none;
+    margin-right: 10px;
+    transition: 0.2s;
+}
+
+.table-actions a:hover { color: var(--accent-light); }
+
+/* Highlight positive/negative amounts */
+.amount-positive { color: var(--success); font-weight: 500; }
+.amount-negative { color: var(--danger); font-weight: 500; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    body { flex-direction: column; }
+    .sidebar { position: relative; width: 100%; height: auto; padding: 20px; }
+    .main { margin-left:0; padding:30px 20px; }
+    table { font-size: 13px; }
+}
+</style>
 </head>
-
 <body>
 
-    <!-- Шапка сайта -->
-    <header>
-        <h1>Поставщики</h1>
-    </header>
+<div class="sidebar">
+    <h2>Navigation</h2>
+    <ul>
+        <li><a href="/glavn/prodaj/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h18l-2 13H5L3 3z"/><path d="M16 21a2 2 0 100-4 2 2 0 000 4zM8 21a2 2 0 100-4 2 2 0 000 4z"/></svg>Продажа</a></li>
+        <li><a href="/glavn/zakaz/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Заказы</a></li>
+        <li><a href="/glavn/postav/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-8 0v2"/><circle cx="12" cy="7" r="4"/></svg>Поставщики</a></li>
+        <li><a href="/glavn/product/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 17l9 4 9-4"/><path d="M3 12l9 4 9-4"/></svg>Склад</a></li>
+        <li><a href="/glavn/prod/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/></svg>Продажи</a></li>
+        <li><a href="/glavn/cash/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>Касса</a></li>
+        <li><a href="/glavn/contacts/"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V8z"/><path d="M3 8l9 6 9-6"/></svg>Контакты</a></li>
+    </ul>
+</div>
 
-    <!-- Навигационное меню -->
-    <nav>
-        <ul>
-            <li><a href="/glavn/prodaj/">Продажа на месте</a></li>
-            <li><a href="/glavn/zakaz/">Рассрочка</a></li>
-            <li><a href="/glavn/postav/">Поставщики</a></li>
-            <li><a href="/glavn/product/">Склад</a></li>
-            <li><a href="/glavn/prod/">Продажи</a></li>
-            <li><a href="/glavn/cash/">Касса</a></li>
-            <li><a href="/glavn/contacts/">Контакты</a></li>
-        </ul>
-    </nav>
-
-    <!-- Основное содержимое страницы -->
-    <section id="orders">
-
-        <h2>Список поставщиков</h2>
+<div class="main">
+    <h2>Список поставщиков</h2>
+    <div class="table-wrapper">
         <table>
             <tr>
                 <th>#</th>
                 <th>Поставщик</th>
                 <th>Сумма</th>
-                <th>Последняя операция</th>
+                <th>Действия</th>
             </tr>
             {% for i in data %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ i.postav }}</td>
-                <td style="color:{% if i.total_cen > 0 %} red {% elif i.total_cen < 0 %} green {% endif %};" >{{ i.total_cen }}</td>
-                <td>{{ i.date }}</td>
-                <td style="display: flex; align-items: center; gap: 5px;">
-                    <a type="submit" href="/glavn/editor/postav/{{i.id}}/" class="btn">✎</a>          
-                    <a href="">|</a>
-                    <a href="/glavn/postav_prod/{{ i.id }}/" class="btn">🔍</a>
+                <td class="{% if i.total_cen > 0 %}amount-negative{% elif i.total_cen < 0 %}amount-positive{% endif %}">{{ i.total_cen }}</td>
+                <td class="table-actions">
+                    <a href="/glavn/postav_prod/{{ i.id }}/">🔍</a>
                 </td>
             </tr>
             {% endfor %}
         </table>
-    </section>
-</body>
+    </div>
+</div>
 
+</body>
 </html>

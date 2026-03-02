@@ -61,7 +61,11 @@ def prod(req):
 
 def products(req):
     data = Product.objects.all()
-    return render(req, 'program/products.html', {'data': data})
+    if req.method == 'POST':
+        text_poisk = req.POST.get("text_poisk")
+        data = Product.objects.filter(product=text_poisk)
+    data_list = Product.objects.all().order_by("product")
+    return render(req, 'program/products.html', {'data': data, "data_list": data_list})
 
 
 
@@ -74,6 +78,7 @@ def add_products(req):
         postav_name = req.POST['postav']
 
         # Поиск поставщика по названию
+        print(postav_name)
         postav = Postav.objects.get(postav=postav_name)
 
         # Проверяем, существуют ли товары в базе данных
@@ -209,6 +214,10 @@ def prodaj(req):
 
 def zakaz(request):
     data = Zakaz.objects.filter(status=True).order_by("opl_date")
+    if request.method == 'POST':
+        date_poisk = request.POST.get("date")
+        print(1)
+        data = Zakaz.objects.filter(status=True, opl_date=date_poisk).order_by("opl_date")
     day = date.today()
     super_cen = sum(z.total_cen for z in data)
     return render(request, 'program/index.html', {'data': data, "super_cen": super_cen, "day": day})
@@ -305,89 +314,83 @@ def add_zakaz(req):
 
 
 def rasroch(req, _id):
-    if req.method == 'POST':
-        del_id = req.POST.get('delete')
-        if del_id:
-            try:
-                today = date.today()  
-                formatted_date = today.strftime("%Y-%m-%d") 
+    order_data = Zakaz.objects.filter(id=_id).first()
+    if not order_data:
+        return render(req, 'program/error.html', {"message": "Заказ не найден"})
 
-                # Закрываем заказ и ставим пометку о выплате
-                order_data = Zakaz.objects.filter(id=_id, status=True).first()
-                Zakaz.objects.filter(id=_id, status=True).update(total_cen = 0)
-                CashMovement.objects.create(
-                    amount=order_data.total_cen,
-                    movement_type='INCOME',
-                    reason=f"Оплата по рассрочке заказа #{_id}",
-                    source=order_data.fio,
-                    created_at=formatted_date,
-                )
-                Prodaj.objects.filter(zakaz_id=del_id).update(prod_form="Рассрочка выплачена")
-                Zakaz.objects.filter(id=del_id).update(status=False)
-                return redirect('/glavn/zakaz')
-            except Zakaz.DoesNotExist:
-                pass
+    today = date.today()
+    formatted_date = today.strftime("%Y-%m-%d")
 
-        if all(map(req.POST.get, ["opl", "date"])):
-            _opl = Decimal(req.POST.get("opl"))
-            _date = req.POST.get("date")
-
-            # Получаем заказ из базы данных
-            order_data = Zakaz.objects.filter(id=_id, status=True).first()
-            if not order_data:
-                return render(req, 'program/index.html', {"message": "Заказ не найден"})
-
-            # Зарегистрируем приход средств от очередного платежа
+    # Обработка закрытия заказа
+    if req.method == 'POST' and 'delete' in req.POST:
+        try:
+            # Зарегистрировать полный приход
             CashMovement.objects.create(
-                amount=_opl,
+                amount=order_data.total_cen,
                 movement_type='INCOME',
                 reason=f"Оплата по рассрочке заказа #{_id}",
                 source=order_data.fio,
-                created_at=_date,
+                created_at=formatted_date,
             )
+            # Обновление Prodaj (закрытие рассрочки)
+            Prodaj.objects.filter(zakaz_id=str(_id)).update(prod_form="Рассрочка выплачена")
+            # Закрытие заказа
+            order_data.total_cen = 0
+            order_data.m_count = 0
+            order_data.status = False
+            order_data.save()
+            return redirect('/glavn/zakaz')
+        except Exception as e:
+            return render(req, 'program/error.html', {"message": f"Ошибка при закрытии заказа: {e}"})
 
-            # Базовые параметры заказа
-            total_cen = order_data.total_cen
-            current_m_count = order_data.m_count
+    # Обработка частичной оплаты
+    if req.method == 'POST' and all(map(req.POST.get, ["opl", "date"])):
+        _opl = Decimal(req.POST.get("opl"))
+        _date = req.POST.get("date")
 
-            # Размер месячного платежа
-            monthly_payment = total_cen / current_m_count
+        if order_data.m_count <= 0:
+            return render(req, 'program/index.html', {"message": "Невозможно оплатить, заказ уже закрыт."})
 
-            # Смотрим, соответствует ли платеж норме
-            if _opl < monthly_payment:
-                return render(req, 'program/index.html', {"message": "Минимальная сумма платежа меньше установленной нормы"})
+        monthly_payment = order_data.total_cen / order_data.m_count
 
-            # Рассчитываем оставшуюся задолженность
-            remaining_debt = total_cen - _opl
+        if _opl < monthly_payment:
+            return render(req, 'program/index.html', {"message": "Минимальная сумма платежа меньше установленной нормы"})
 
-            # Если долг погашен полностью
-            if remaining_debt <= 0:
-                # Закрытие заказа и установка статуса "закрыт"
-                Zakaz.objects.filter(id=_id, status=True).update(
-                    total_cen=0,
-                    m_count=0,
-                    opl_date=_date,
-                    status=False  # Установка статуса False
-                )
-                return render(req, 'program/index.html', {"message": "Оплата произведена успешно. Заказ закрыт."})
-            else:
-                # Сохраняем новую дату и уменьшаем количество месяцев
-                new_m_count = current_m_count - 1
-                Zakaz.objects.filter(id=_id, status=True).update(
-                    total_cen=remaining_debt,
-                    m_count=new_m_count,
-                    opl_date=_date
-                )
+        remaining_debt = order_data.total_cen - _opl
 
-    # Информация о состоянии заказа
-    updated_order = Zakaz.objects.filter(id=_id).first()
-    if updated_order is None:
-        return render(req, 'program/error.html', {"message": "Заказ не найден"})
+        # Регистрируем приход платежа
+        CashMovement.objects.create(
+            amount=_opl,
+            movement_type='INCOME',
+            reason=f"Оплата по рассрочке заказа #{_id}",
+            source=order_data.fio,
+            created_at=_date,
+        )
 
-    # Готовые данные для рендера
+        if remaining_debt <= 0:
+            # Полное погашение
+            order_data.total_cen = 0
+            order_data.m_count = 0
+            order_data.status = False
+            order_data.opl_date = _date
+            order_data.save()
+            return render(req, 'program/index.html', {"message": "Оплата произведена успешно. Заказ закрыт."})
+        else:
+            # Частичная оплата
+            order_data.total_cen = remaining_debt
+            order_data.m_count = max(order_data.m_count - 1, 0)
+            order_data.opl_date = _date
+            order_data.save()
+
+    # Формирование данных для шаблона
+    try:
+        per_month_cen = round(order_data.total_cen / order_data.m_count, 2) if order_data.m_count > 0 else 0
+    except:
+        per_month_cen = 0
+
     data = {
-        'date': fun(str(updated_order.opl_date), updated_order.m_count),
-        'cen': round(updated_order.total_cen / updated_order.m_count, 2) if updated_order.m_count > 0 else 0,
+        'date': fun(str(order_data.opl_date), order_data.m_count),
+        'cen': per_month_cen,
         'id': _id
     }
 
@@ -520,7 +523,7 @@ def postav_prod(req, _id):
     # Сначала получаем экземпляр Postav по переданной переменной _id
     postav_instance = get_object_or_404(Postav, pk=_id)
 
-    movements = PostavCashMovement.objects.filter(postav_id=postav_instance).order_by("-created_at")
+    movements = PostavCashMovement.objects.filter(postav_id=_id).order_by("-created_at")
     balance = calculate_balance(movements)
 
     Postav.objects.filter(pk=_id).update(total_cen=balance)
@@ -581,28 +584,28 @@ def calculate_balance(movements):
 
 def contacts_view(req):
     # Получаем все контакты из базы данных
+    try:
+        contacts = Contact.objects.filter(contact_type="supplier")
 
-    contacts = Contact.objects.filter(contact_type="supplier")
+        if req.method == 'POST':
+            # Получаем данные из POST-запроса
+            contact_type = req.POST.get('contact_type')
+            name = req.POST.get('name')
+            phone = req.POST.get('phone')
+            address = req.POST.get('address')
 
-    if req.method == 'POST':
-        # Получаем данные из POST-запроса
-        contact_type = req.POST.get('contact_type')
-        name = req.POST.get('name')
-        phone = req.POST.get('phone')
-        email = req.POST.get('email')
-        address = req.POST.get('address')
+            # Создаем и сохраняем новый контакт
+            Contact.objects.create(contact_type=contact_type, name=name, phone=phone, address=address)
+            print(contact_type)
+            if contact_type == "supplier":
+                Postav.objects.create(postav=name, slug="postav", total_cen=0)
 
-        # Создаем и сохраняем новый контакт
-        Contact.objects.create(contact_type=contact_type, name=name, phone=phone, address=address)
-
-        if contact_type == "supplier":
-            day = date.today()
-            Postav.objects.create(postav=name, slug="ttt", total_cen=0, date=day)
-
-        # Перенаправляем на страницу контактов после успешного добавления
-        return redirect('/glavn/contacts/')
-
-    return render(req, 'program/contact.html', {'contacts': contacts})
+            # Перенаправляем на страницу контактов после успешного добавления
+            return redirect('/glavn/contacts/')
+        
+        return render(req, 'program/contact.html', {'contacts': contacts})
+    except:
+        return render(req, 'program/contact.html', {'contacts': contacts})
 
 
 
