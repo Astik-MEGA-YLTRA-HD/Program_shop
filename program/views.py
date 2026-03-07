@@ -26,7 +26,6 @@ def log(req):
 
             return response
         else:
-            print("не")
             return render(req, 'program/login.html', {'error': 'Неверный пароль.'})
     else:
         return render(req, 'program/login.html')
