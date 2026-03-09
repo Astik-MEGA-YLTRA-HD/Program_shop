@@ -442,6 +442,9 @@ def docum_oform(request, _id):
         client_phone = request.POST.get("client_phon")
         address = request.POST.get("address")
         passport = request.POST.get("passport")
+        poruch = request.POST.get("poruch")
+        rojd_poruch = request.POST.get("rojd_poruch")
+        passport_poruch = request.POST.get("passport_poruch")
 
         # Найти заказ по переданному id
         try:
@@ -471,6 +474,9 @@ def docum_oform(request, _id):
                 "join_prod": join_prod,
                 "m_count": zakaz.m_count,
                 "total_cen": zakaz.total_cen,
+                "poruch": poruch,
+                "rojd_poruch": rojd_poruch,
+                "passport_poruch": passport_poruch,
                 "opl": Decimal(zakaz.total_cen) / Decimal(zakaz.m_count),
                 "all_opl": Decimal(zakaz.total_cen) + Decimal(zakaz.vznos),
                 "k_opl": Decimal(zakaz.total_cen),

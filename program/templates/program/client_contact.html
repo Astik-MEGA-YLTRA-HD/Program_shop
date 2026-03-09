@@ -135,7 +135,7 @@ tr:hover { background: rgba(99,102,241,0.05); }
                 <label>Тип контакта:</label>
                 <select name="contact_type">
                     <option value="customer">Клиент</option>
-                    <option value="supplier">Поставщик</option>
+                    <option value="supplier" selected>Поставщик</option>
                 </select>
                 <label>ФИО / Название организации:</label>
                 <input type="text" name="name" required />
@@ -149,10 +149,10 @@ tr:hover { background: rgba(99,102,241,0.05); }
     </div>
 
     <div style="margin-bottom: 20px;">
-        <label>Показать:</label>
+        <label>Тип контакта:</label>
         <select name="order_type" onchange="window.location.href=this.value">
-            <option value="/glavn/contacts/" selected>Поставщики</option>
-            <option value="/glavn/client_contacts/">Клиенты</option>
+            <option value="/glavn/client_contacts/" selected>Клиент</option>
+            <option value="/glavn/contacts/">Поставщик</option>
         </select>
     </div>
 
